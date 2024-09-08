@@ -24,7 +24,9 @@ class OneLang {
         }
     }
 
-    ast() {
+    ast(input) {
+        this.parser.feed(input);
+
         // Method placeholder for returning AST (Abstract Syntax Tree)
         return this.parser.results.length > 0 ? this.parser.results[0] : null;
     }

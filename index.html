@@ -62,7 +62,7 @@
 
     <h2>Code Preview</h2>
     <pre><code id="highlightedCode" class="language-javascript">
-// Your JavaScript code here
+//inspired by wix and zoho deluge codes
 import math from "@core/math.js"
 import route from "@core/route.js"
 import dom from "@core/dom.js"
@@ -116,16 +116,25 @@ if (x < 3) {
         });
 
         // Ensure `OneLang` is available globally
-        const oneLang = new OneLang();
+       ;
 
         function runCode() {
-            const input = codeEditor.getValue();
+            const oneLang = new OneLang()
+            const input = preprocessCode(codeEditor.getValue());
+            console.log(input);
             oneLang.run(input);  // Call the `run` method of the `OneLang` instance
         }
 
         function ast() {
+            const oneLang = new OneLang()
             const input = codeEditor.getValue();
+            console.log(input)
             console.log(oneLang.ast(input));
+        }
+
+        function preprocessCode(input) {
+    // Remove empty lines
+    return input
         }
 
         // Highlight the static code block initially
