@@ -9,12 +9,6 @@ import math from "@core/math.js"
 import route from "@core/route.js"
 import dom from "@core/dom.js"
 
-dom
-  .css('color', 'red')
-  .addClass('highlight')
-  .text('Hello World')
-  .on('click', () => alert('Clicked!'));
-
 
 print(math.add(5 3))
 print("Hello, world")

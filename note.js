@@ -18,3 +18,10 @@
 //         }
 //     }
 // };
+
+//to run node 
+// npx nearleyc grammar.ne -o grammar.js
+//node index.js
+
+//to run browser 
+//npx webpack

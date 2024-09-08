@@ -3,77 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nearley and Moo in Browser</title>
-    <script src="https://unpkg.com/nearley@latest"></script>
-    <script src="https://unpkg.com/moo@latest"></script>
-    <script src="./grammar.js"></script>
-    <script src="path/to/your/generator.js"></script>
+    <title>OneLang Example</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .CodeMirror {
+            height: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        pre {
+            background-color: #2e2e2e;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            color: white;
+        }
+        button {
+            margin: 5px;
+            padding: 5px 10px;
+            background-color: #555;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #777;
+        }
+        /* Custom Highlight.js styles */
+        .hljs-keyword { color: #ff79c6; } /* Pink */
+        .hljs-string { color: #50fa7b; }   /* Green */
+        .hljs-variable { color: #f1fa8c; } /* Yellow */
+        .hljs-function { color: #8be9fd; } /* Blue */
+        .hljs-comment { color: #6272a4; }   /* Light Blue */
+        .hljs-number { color: #bd93f9; }    /* Purple */
+        .hljs-title { color: #ffb86c; }     /* Orange */
+    </style>
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/theme/dracula.min.css">
+    <!-- CodeMirror JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/mode/javascript/javascript.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
 </head>
 <body>
-    <h1>Nearley and Moo Example</h1>
-    
-<script>
-    // Example grammar definition (for testing)
-    const grammar = {
-        Lexer: Moo.compile({
-  WS:      /[ \t]+/,
-  comment: /\/\/.*?$/,
-  number:  /0|[1-9][0-9]*/,
-  string:  /"(?:\\["\\]|[^\n"\\])*"/,
-  lparen:  '(',
-  rparen:  ')',
-  lbrace:  '{',
-  rbrace:  '}',
- "+":     "+",
-  "-":     "-",
-  "*":     "*",
-  "/":     "/",
-  ">":     ">",
-  "<":     "<",
-  ">=":    ">=",
-  "<=":    "<=",
-  "==":    "==",
-  "!=":    "!=",
-  ".":     ".",
-  "(":     "(",
-  ")":     ")",
-  "{":     "{",
-  "}":     "}",
-  ",":     ",",
-  "?":     "?",
-  ":":     ":",
-  "if":    "if",
-  "else":  "else",
-  "while": "while",
-  "import": "import",
-  "from":  "from",
-  identifier: /[a-zA-Z][a-zA-Z_0-9]*/,
-  fatarrow: '=>',
-  assign: '=',
-  NL:      { match: /\n/, lineBreaks: true },
-}),
-        ParserRules: [
-            // Define your grammar rules here
-        ]
-    };
 
-    // Create a Nearley parser with the defined grammar
-    const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
+    <h1>Run OneLang Code</h1>
+    <div id="codeEditor"></div>
+    <br>
+    <button onclick="runCode()">Run Code</button>
+    <button onclick="ast()">AST</button>
 
-    // Example input string
-    const input = `
-        1 + 2 * (3 - 4)
-    `;
+    <h2>Code Preview</h2>
+    <pre><code id="highlightedCode" class="language-javascript">
+// Your JavaScript code here
+import math from "@core/math.js"
+import route from "@core/route.js"
+import dom from "@core/dom.js"
 
-    // Feed the input to the parser
-    parser.feed(input);
+print(math.add(5, 3))
+print("Hello, world")
+print("3 + 5 = " + add(3, 5))
+yy = 10
+cc = 5 + 9
+print(cc)
 
-    // Process the parse results
-    if (parser.results.length > 0) {
-        console.log(JSON.stringify(parser.results[0], null, 2));
-    } else {
-        console.log("No parse results");
-    }
-</script>
+cc = 5 > 9 ? "I am true" : "I am false"
+print(cc)
+
+hello = (subject) => {
+    print(concat("Hello, ", subject))
+    print(concat("Hello, ", subject))
+}
+
+doIt = () => {
+    print("Do it!")
+}
+
+doIt()
+
+hello("Brother")
+
+classmates = split("Jerry Jordan Johnny Jack Jeffery", " ")
+
+each(classmates, (peep) =>
+    print(concat("Hello ", peep))
+)
+
+x = 1 + 4 - 100
+if (x < 3) {
+    print("true")
+} else {
+    print("else")
+}
+    </code></pre>
+
+    <script src="./dist/bundle.js"></script> <!-- Path to the Webpack bundle -->
+
+    <script>
+        // Initialize CodeMirror
+        const codeEditor = CodeMirror(document.getElementById('codeEditor'), {
+            mode: 'javascript',
+            theme: 'dracula',
+            lineNumbers: true,
+            value: `print("Hello from OneLang!")`
+        });
+
+        // Ensure `OneLang` is available globally
+        const oneLang = new OneLang();
+
+        function runCode() {
+            const input = codeEditor.getValue();
+            oneLang.run(input);  // Call the `run` method of the `OneLang` instance
+        }
+
+        function ast() {
+            const input = codeEditor.getValue();
+            console.log(oneLang.ast(input));
+        }
+
+        // Highlight the static code block initially
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightElement(document.getElementById('highlightedCode'));
+        });
+    </script>
 </body>
 </html>

@@ -1,16 +1,15 @@
 const path = require('path');
 
 module.exports = {
-    entry: './index.js',  // Adjust the path to your entry file
+    entry: './entry.js', // Your main JS file
     output: {
+        path: path.resolve(__dirname, 'dist'),
         filename: 'bundle.js',
-        path: path.resolve(__dirname, 'dist')
+        library: {
+            name: 'OneLang',
+            type: 'umd', // Universal Module Definition
+        },
+        globalObject: 'this', // For compatibility with different environments
     },
     mode: 'development',
-    resolve: {
-        fallback: {
-            "path": require.resolve("path-browserify"),
-            "fs": false
-        }
-    }
 };
