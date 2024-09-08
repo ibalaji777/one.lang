@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nearley and Moo in Browser</title>
+    <script src="https://unpkg.com/nearley@latest"></script>
+    <script src="https://unpkg.com/moo@latest"></script>
+    <script src="./grammar.js"></script>
+    <script src="path/to/your/generator.js"></script>
+</head>
+<body>
+    <h1>Nearley and Moo Example</h1>
+    
+<script>
+    // Example grammar definition (for testing)
+    const grammar = {
+        Lexer: Moo.compile({
+  WS:      /[ \t]+/,
+  comment: /\/\/.*?$/,
+  number:  /0|[1-9][0-9]*/,
+  string:  /"(?:\\["\\]|[^\n"\\])*"/,
+  lparen:  '(',
+  rparen:  ')',
+  lbrace:  '{',
+  rbrace:  '}',
+ "+":     "+",
+  "-":     "-",
+  "*":     "*",
+  "/":     "/",
+  ">":     ">",
+  "<":     "<",
+  ">=":    ">=",
+  "<=":    "<=",
+  "==":    "==",
+  "!=":    "!=",
+  ".":     ".",
+  "(":     "(",
+  ")":     ")",
+  "{":     "{",
+  "}":     "}",
+  ",":     ",",
+  "?":     "?",
+  ":":     ":",
+  "if":    "if",
+  "else":  "else",
+  "while": "while",
+  "import": "import",
+  "from":  "from",
+  identifier: /[a-zA-Z][a-zA-Z_0-9]*/,
+  fatarrow: '=>',
+  assign: '=',
+  NL:      { match: /\n/, lineBreaks: true },
+}),
+        ParserRules: [
+            // Define your grammar rules here
+        ]
+    };
+
+    // Create a Nearley parser with the defined grammar
+    const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
+
+    // Example input string
+    const input = `
+        1 + 2 * (3 - 4)
+    `;
+
+    // Feed the input to the parser
+    parser.feed(input);
+
+    // Process the parse results
+    if (parser.results.length > 0) {
+        console.log(JSON.stringify(parser.results[0], null, 2));
+    } else {
+        console.log("No parse results");
+    }
+</script>
+</body>
+</html>

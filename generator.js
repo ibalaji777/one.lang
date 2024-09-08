@@ -83,7 +83,26 @@ class JSInterpreter {
         const math = {
             add: (a, b) => a + b
         };
-        this.variables[node.library] = math;
+        const route = {
+            add: (a, b) => a + b
+        };
+
+
+
+        switch (node.path) {
+            case "@core/math.js":
+                this.variables[node.library] = math;                
+                break;
+            case "@core/route.js":
+                this.variables[node.library] = route;                
+                break;
+            case "@core/dom.js":
+               const dom =new DOMManipulator();
+                this.variables[node.library] = dom;                
+                break;
+    
+           
+        }
     }
 
     // Function calls
@@ -184,5 +203,49 @@ class JSInterpreter {
         return this.fib(n - 1) + this.fib(n - 2);
     }
 }
+
+class DOMManipulator {
+    constructor(selector) {
+      this.elements = document.querySelectorAll(selector);
+    }
+  
+    css(property, value) {
+      this.elements.forEach(el => el.style[property] = value);
+      return this;
+    }
+  
+    addClass(className) {
+      this.elements.forEach(el => el.classList.add(className));
+      return this;
+    }
+  
+    removeClass(className) {
+      this.elements.forEach(el => el.classList.remove(className));
+      return this;
+    }
+  
+    text(content) {
+      this.elements.forEach(el => el.textContent = content);
+      return this;
+    }
+  
+    html(content) {
+      this.elements.forEach(el => el.innerHTML = content);
+      return this;
+    }
+  
+    on(event, handler) {
+      this.elements.forEach(el => el.addEventListener(event, handler));
+      return this;
+    }
+  
+    off(event, handler) {
+      this.elements.forEach(el => el.removeEventListener(event, handler));
+      return this;
+    }
+  
+    // Add more methods as needed
+  }
+  
 
 module.exports = JSInterpreter;
