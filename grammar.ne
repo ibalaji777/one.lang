@@ -25,11 +25,12 @@ statements
 statement
     -> var_assign  {% id %}
     | fun_call     {% id %}
-    | %comment     {% id %}
+    | chain        {% id %}
     | import_statement  
     | if_statement {% id %}
     | while_loop   {% id %}
     | do_while_loop   {% id %}
+    | %comment     {% id %}
 
 # Import statement
 import_statement 
@@ -59,17 +60,51 @@ var_assign
 
 # Function call
 fun_call
-    -> (%identifier _ "."):?  %identifier _ "(" _ml (arg_list _ml):? ")"
+    -> %identifier _ "(" _ml (arg_list _ml):? ")"
         {%
             (data) => {
                 return {
                     type: "fun_call",
-                    object: data[0] ? data[0][0] : null,
-                    fun_name: data[1],
+                    object: null, // For standalone function calls
+                    fun_name: data[0],
+                    arguments: data[4] ? data[4][0] : []
+                };
+            }
+        %}
+
+# Chain function call (with recursion for method chaining)
+chain 
+    -> (fun_call _):? "." %identifier "(" _ml (arg_list _ml):? ")" 
+        {%
+            (data) => {
+                const previousCall = data[0] ? data[0][0] : null;
+                return {
+                    type: "chain_fun",
+                    object: previousCall ? previousCall : null,
+                    fun_name: data[2],
                     arguments: data[5] ? data[5][0] : []
                 };
             }
         %}
+    | (fun_call _):? "." %identifier "(" _ml (arg_list _ml):? ")" chain
+        {%
+            (data) => {
+                const previousCall = data[0] ? data[0][0] : null;
+                const currentCall = {
+                    type: "chain_fun",
+                    object: previousCall ? previousCall : null,
+                    fun_name: data[2],
+                    arguments: data[5] ? data[5][0] : []
+                };
+                return {
+                    type: "chain_fun",
+                    object: currentCall, // Recursive call for chaining
+                    fun_name: data[7].fun_name, // Pass next function name in chain
+                    arguments: data[7].arguments // Pass next arguments in chain
+                };
+            }
+        %}
+
 
 # Argument list for function calls
 arg_list

@@ -100,20 +100,41 @@ class JSInterpreter {
                const dom =new DOMManipulator();
                 this.variables[node.library] = dom;                
                 break;
+            case "@core/chain.js":
+            const chain =new Chainable();
+            this.variables[node.library] = chain;                
+                break;
+
+                
     
            
         }
     }
 
     // Function calls
+    // evaluateFunction(node) {
+    //     const funcName = node.fun_name.value;
+    //     const args = node.arguments.map(arg => this.evaluateNode(arg));
+        
+    //     if (this.variables[funcName]) {
+    //         return this.variables[funcName](...args); // Lambda function
+    //     }
+    //     return this[funcName](...args); // Built-in function
+    // }
     evaluateFunction(node) {
+        let object = node.object ? this.evaluateNode(node.object) : null;
         const funcName = node.fun_name.value;
         const args = node.arguments.map(arg => this.evaluateNode(arg));
-        
-        if (this.variables[funcName]) {
+
+        if (object && object[funcName]) {
+            return object[funcName](...args); // Method chaining
+        } else if (this.variables[funcName]) {
             return this.variables[funcName](...args); // Lambda function
+        } else if (this[funcName]) {
+            return this[funcName](...args); // Built-in function
+        } else {
+            throw new Error(`Unknown function: ${funcName}`);
         }
-        return this[funcName](...args); // Built-in function
     }
 
     // Conditional statements
@@ -208,6 +229,10 @@ class DOMManipulator {
     constructor(selector) {
       this.elements = document.querySelectorAll(selector);
     }
+    selector(selector){
+        this.elements = document.querySelectorAll(selector);
+
+    }
   
     css(property, value) {
       this.elements.forEach(el => el.style[property] = value);
@@ -248,4 +273,42 @@ class DOMManipulator {
   }
   
 
+  class Chainable {
+    constructor() {
+      this.value = 0;
+    }
+  
+    add(val) {
+      this.value += val;
+      return this;  // Return this to allow chaining
+    }
+  
+    subtract(val) {
+      this.value -= val;
+      return this;
+    }
+  
+    multiply(val) {
+      this.value *= val;
+      return this;
+    }
+  
+    divide(val) {
+      if (val !== 0) {
+        this.value /= val;
+      } else {
+        console.error("Division by zero is not allowed.");
+      }
+      return this;
+    }
+  
+    result() {
+      return this.value;
+    }
+  }
+  
+  const chain = new Chainable();
+  const finalResult = chain.add(10).subtract(3).multiply(2).divide(7).result();
+  console.log(finalResult); // Output: 2
+  
 module.exports = JSInterpreter;

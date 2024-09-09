@@ -27,6 +27,7 @@ let lexer = moo.compile({
   ",":     ",",
   "?":     "?",
   ":":     ":",
+  ".":     ".",
   "if":    "if",
   "else":  "else",
   "while": "while",

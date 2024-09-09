@@ -4,52 +4,8 @@ const JSInterpreter = require("./generator.js");
 
 const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
 
-const input = `
-import math from "@core/math.js"
-import route from "@core/route.js"
-import dom from "@core/dom.js"
-
-
-print(math.add(5 3))
-print("Hello, world")
-print("3 + 5 =" add(3 5))
-yy=10
-cc = 5 + 9
-print(cc)
-
-cc = 5 > 9 ? "i am true" : "i am false"
-print(cc)
-
-
-hello = (subject) => {
-    print(concat("Hello, " subject))
-    print(concat("Hello, " subject))
-}
-
-doIt = () => {
-    print("Do it!")
-}
-
-doIt()
-
-hello("Brother")
-
-classmates = split("Jerry Jordan Johnny Jack Jeffery" " ")
-
-each(classmates (peep) =>
-    print(concat("Hello " peep))
-)
-
-x= 1 + 4 - 100
-if( x < 3 ){
- print("true") 
- }
-else{
- print("else") 
- }
-
-
-`;
+const input = 
+`google().add(3).subtract(5)`;
 parser.feed(input);
 
 if (parser.results.length > 0) {

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Form Builder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f4f7;
+        }
+
+        .container {
+            display: flex;
+            width: 90%;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .editor, .preview {
+            width: 50%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .editor {
+            border-right: 2px solid #eee;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .preview {
+            background: #f9f9f9;
+            border-radius: 5px;
+            padding: 20px;
+        }
+
+        .field-container {
+            margin-bottom: 10px;
+        }
+
+        #storedFormsList {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Form Editor -->
+        <div class="editor">
+            <h1>Form Editor</h1>
+
+            <label for="formName">Form Name</label>
+            <input type="text" id="formName" placeholder="Enter form name">
+
+            <label for="fieldType">Field Type</label>
+            <select id="fieldType">
+                <option value="text">Text</option>
+                <option value="email">Email</option>
+                <option value="tel">Phone</option>
+                <option value="textarea">Textarea</option>
+            </select>
+
+            <label for="fieldLabel">Field Label</label>
+            <input type="text" id="fieldLabel" placeholder="Enter label">
+
+            <label for="fieldPlaceholder">Placeholder</label>
+            <input type="text" id="fieldPlaceholder" placeholder="Enter placeholder">
+
+            <label for="fieldRequired">Required</label>
+            <select id="fieldRequired">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </select>
+
+            <button type="button" id="addFieldBtn">Add Field</button>
+            <button type="button" id="saveFormBtn">Save Form</button>
+
+            <label for="storedFormsList">Select Form</label>
+            <select id="storedFormsList">
+                <option value="">-- Select Form --</option>
+            </select>
+
+            <button type="button" id="loadFormBtn">Load Selected Form</button>
+        </div>
+
+        <!-- Form Preview -->
+        <div class="preview">
+            <h1>Form Preview</h1>
+            <form id="formPreview"></form>
+        </div>
+    </div>
+
+    <script>
+        class FormBuilder {
+            constructor() {
+                this.formFields = [];
+                this.storedForms = JSON.parse(localStorage.getItem('storedForms')) || [];
+                this.init();
+            }
+
+            init() {
+                document.getElementById('addFieldBtn').addEventListener('click', () => this.addField());
+                document.getElementById('saveFormBtn').addEventListener('click', () => this.saveForm());
+                document.getElementById('loadFormBtn').addEventListener('click', () => this.loadSelectedForm());
+                this.populateFormList();
+            }
+
+            addField() {
+                const fieldType = document.getElementById('fieldType').value;
+                const fieldLabel = document.getElementById('fieldLabel').value;
+                const fieldPlaceholder = document.getElementById('fieldPlaceholder').value;
+                const fieldRequired = document.getElementById('fieldRequired').value === 'true';
+
+                const field = {
+                    type: fieldType,
+                    label: fieldLabel,
+                    placeholder: fieldPlaceholder,
+                    required: fieldRequired
+                };
+
+                this.formFields.push(field);
+                this.renderPreview();
+            }
+
+            renderPreview() {
+                const formPreview = document.getElementById('formPreview');
+                formPreview.innerHTML = '';
+
+                this.formFields.forEach(field => {
+                    const fieldElement = document.createElement('div');
+                    fieldElement.classList.add('field-container');
+
+                    let inputElement;
+                    switch (field.type) {
+                        case 'text':
+                            inputElement = `<input type="text" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}>`;
+                            break;
+                        case 'email':
+                            inputElement = `<input type="email" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}>`;
+                            break;
+                        case 'tel':
+                            inputElement = `<input type="tel" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}>`;
+                            break;
+                        case 'textarea':
+                            inputElement = `<textarea placeholder="${field.placeholder}" ${field.required ? 'required' : ''}></textarea>`;
+                            break;
+                        default:
+                            inputElement = '';
+                    }
+
+                    fieldElement.innerHTML = `<label>${field.label}</label>${inputElement}`;
+                    formPreview.appendChild(fieldElement);
+                });
+            }
+
+            saveForm() {
+                const formName = document.getElementById('formName').value;
+
+                if (!formName) {
+                    alert('Please enter a form name');
+                    return;
+                }
+
+                const formId = this.generateRandomId();
+                const formObject = {
+                    id: formId,
+                    name: formName,
+                    fields: this.formFields
+                };
+
+                this.storedForms.push(formObject);
+                localStorage.setItem('storedForms', JSON.stringify(this.storedForms));
+
+                this.populateFormList();
+                alert('Form saved!');
+            }
+
+            populateFormList() {
+                const formList = document.getElementById('storedFormsList');
+                formList.innerHTML = '<option value="">-- Select Form --</option>';
+
+                this.storedForms.forEach(form => {
+                    const option = document.createElement('option');
+                    option.value = form.id;
+                    option.text = form.name;
+                    formList.appendChild(option);
+                });
+            }
+
+            loadSelectedForm() {
+                const selectedFormId = document.getElementById('storedFormsList').value;
+                const selectedForm = this.storedForms.find(form => form.id === selectedFormId);
+
+                if (selectedForm) {
+                    this.formFields = selectedForm.fields;
+                    this.renderPreview();
+                    alert(`Loaded form: ${selectedForm.name}`);
+                } else {
+                    alert('Please select a valid form');
+                }
+            }
+
+            generateRandomId() {
+                return Math.random().toString(36).substr(2, 9);
+            }
+        }
+
+        const formBuilder = new FormBuilder();
+    </script>
+</body>
+</html>

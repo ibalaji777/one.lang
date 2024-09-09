@@ -24,11 +24,12 @@ var grammar = {
                 },
     {"name": "statement", "symbols": ["var_assign"], "postprocess": id},
     {"name": "statement", "symbols": ["fun_call"], "postprocess": id},
-    {"name": "statement", "symbols": [(myLexer.has("comment") ? {type: "comment"} : comment)], "postprocess": id},
+    {"name": "statement", "symbols": ["chain"], "postprocess": id},
     {"name": "statement", "symbols": ["import_statement"]},
     {"name": "statement", "symbols": ["if_statement"], "postprocess": id},
     {"name": "statement", "symbols": ["while_loop"], "postprocess": id},
     {"name": "statement", "symbols": ["do_while_loop"], "postprocess": id},
+    {"name": "statement", "symbols": [(myLexer.has("comment") ? {type: "comment"} : comment)], "postprocess": id},
     {"name": "import_statement", "symbols": [{"literal":"import"}, "_", (myLexer.has("identifier") ? {type: "identifier"} : identifier), "_", {"literal":"from"}, "_", (myLexer.has("string") ? {type: "string"} : string)], "postprocess": 
         (data) => {
             return {
@@ -47,19 +48,56 @@ var grammar = {
             };
         }
                 },
-    {"name": "fun_call$ebnf$1$subexpression$1", "symbols": [(myLexer.has("identifier") ? {type: "identifier"} : identifier), "_", {"literal":"."}]},
+    {"name": "fun_call$ebnf$1$subexpression$1", "symbols": ["arg_list", "_ml"]},
     {"name": "fun_call$ebnf$1", "symbols": ["fun_call$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "fun_call$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "fun_call$ebnf$2$subexpression$1", "symbols": ["arg_list", "_ml"]},
-    {"name": "fun_call$ebnf$2", "symbols": ["fun_call$ebnf$2$subexpression$1"], "postprocess": id},
-    {"name": "fun_call$ebnf$2", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "fun_call", "symbols": ["fun_call$ebnf$1", (myLexer.has("identifier") ? {type: "identifier"} : identifier), "_", {"literal":"("}, "_ml", "fun_call$ebnf$2", {"literal":")"}], "postprocess": 
+    {"name": "fun_call", "symbols": [(myLexer.has("identifier") ? {type: "identifier"} : identifier), "_", {"literal":"("}, "_ml", "fun_call$ebnf$1", {"literal":")"}], "postprocess": 
         (data) => {
             return {
                 type: "fun_call",
-                object: data[0] ? data[0][0] : null,
-                fun_name: data[1],
+                object: null, // For standalone function calls
+                fun_name: data[0],
+                arguments: data[4] ? data[4][0] : []
+            };
+        }
+                },
+    {"name": "chain$ebnf$1$subexpression$1", "symbols": ["fun_call", "_"]},
+    {"name": "chain$ebnf$1", "symbols": ["chain$ebnf$1$subexpression$1"], "postprocess": id},
+    {"name": "chain$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "chain$ebnf$2$subexpression$1", "symbols": ["arg_list", "_ml"]},
+    {"name": "chain$ebnf$2", "symbols": ["chain$ebnf$2$subexpression$1"], "postprocess": id},
+    {"name": "chain$ebnf$2", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "chain", "symbols": ["chain$ebnf$1", {"literal":"."}, (myLexer.has("identifier") ? {type: "identifier"} : identifier), {"literal":"("}, "_ml", "chain$ebnf$2", {"literal":")"}], "postprocess": 
+        (data) => {
+            const previousCall = data[0] ? data[0][0] : null;
+            return {
+                type: "chain_fun",
+                object: previousCall ? previousCall : null,
+                fun_name: data[2],
                 arguments: data[5] ? data[5][0] : []
+            };
+        }
+                },
+    {"name": "chain$ebnf$3$subexpression$1", "symbols": ["fun_call", "_"]},
+    {"name": "chain$ebnf$3", "symbols": ["chain$ebnf$3$subexpression$1"], "postprocess": id},
+    {"name": "chain$ebnf$3", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "chain$ebnf$4$subexpression$1", "symbols": ["arg_list", "_ml"]},
+    {"name": "chain$ebnf$4", "symbols": ["chain$ebnf$4$subexpression$1"], "postprocess": id},
+    {"name": "chain$ebnf$4", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "chain", "symbols": ["chain$ebnf$3", {"literal":"."}, (myLexer.has("identifier") ? {type: "identifier"} : identifier), {"literal":"("}, "_ml", "chain$ebnf$4", {"literal":")"}, "chain"], "postprocess": 
+        (data) => {
+            const previousCall = data[0] ? data[0][0] : null;
+            const currentCall = {
+                type: "chain_fun",
+                object: previousCall ? previousCall : null,
+                fun_name: data[2],
+                arguments: data[5] ? data[5][0] : []
+            };
+            return {
+                type: "chain_fun",
+                object: currentCall, // Recursive call for chaining
+                fun_name: data[7].fun_name, // Pass next function name in chain
+                arguments: data[7].arguments // Pass next arguments in chain
             };
         }
                 },
